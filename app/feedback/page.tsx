@@ -13,7 +13,7 @@ export default function FeedbackPage() {
         title="Share what your team is hearing from customers."
         description="This form is public-facing and designed for structured submissions that can flow directly into the admin dashboard."
         action={
-          <Link className="text-sm font-medium text-primary" href="/">
+          <Link className="text-sm font-semibold text-primary hover:underline" href="/">
             Back to home
           </Link>
         }
@@ -21,7 +21,7 @@ export default function FeedbackPage() {
       <Card className="mx-auto max-w-3xl">
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold">Submit feedback</h2>
+            <h2 className="text-xl font-semibold text-[#606060]">Submit feedback</h2>
             <p className="text-sm text-muted-foreground">
               Required fields, email validation, and comment length are enforced on both client and server.
             </p>

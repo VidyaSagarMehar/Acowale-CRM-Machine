@@ -3,25 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 33% 98%;
-  --foreground: 222 47% 11%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --muted: 210 25% 94%;
-  --muted-foreground: 215 16% 40%;
-  --border: 214 20% 88%;
-  --input: 214 20% 88%;
-  --primary: 218 71% 41%;
-  --primary-foreground: 210 40% 98%;
-  --accent: 210 25% 94%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 0 73% 52%;
-  --destructive-foreground: 210 40% 98%;
-  --ring: 218 71% 41%;
-  --chart-1: 218 71% 41%;
-  --chart-2: 160 84% 32%;
-  --chart-3: 31 95% 56%;
-  --chart-4: 262 83% 58%;
+  --background: 210 17% 98%; /* #FAFBFC */
+  --foreground: 0 0% 12%; /* #1E1E1E */
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 0 0% 12%; /* #1E1E1E */
+  --muted: 215 12% 45%; /* #687280 */
+  --muted-foreground: 215 12% 45%; /* #687280 */
+  --border: 220 8% 92%; /* #E6E8EC */
+  --input: 220 8% 92%; /* #E6E8EC */
+  --primary: 205 100% 51%; /* #0795FF */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --accent: 206 100% 95%; /* #E6F4FF (very light blue for ghost hover) */
+  --accent-foreground: 205 100% 51%; /* #0795FF */
+  --destructive: 0 84% 60%; /* #EF4444 */
+  --destructive-foreground: 0 0% 100%;
+  --ring: 205 100% 51%;
+  --chart-1: 205 100% 51%; /* #0795FF */
+  --chart-2: 206 100% 61%; /* #38A8FF */
+  --chart-3: 205 100% 74%; /* #7CC7FF */
+  --chart-4: 205 100% 86%; /* #B9E2FF */
 }
 
 * {
@@ -30,8 +30,6 @@
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 28%),
-    linear-gradient(180deg, #f8fbff 0%, #f2f5fb 100%);
+  background: hsl(var(--background));
   color: hsl(var(--foreground));
 }

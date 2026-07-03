@@ -32,11 +32,19 @@ const config: Config = {
         }
       },
       boxShadow: {
-        soft: "0 20px 60px rgba(15, 23, 42, 0.08)"
+        card: "0 4px 16px rgba(0, 0, 0, 0.05)",
+        "card-hover": "0 8px 24px rgba(0, 0, 0, 0.08)",
+        dropdown: "0 10px 30px rgba(0, 0, 0, 0.08)",
+        soft: "0 4px 16px rgba(0, 0, 0, 0.05)" // map soft to card shadow to avoid breaking existing usages
       },
       borderRadius: {
-        xl: "1rem",
-        "2xl": "1.5rem"
+        button: "8px",
+        card: "10px",
+        input: "8px",
+        dialog: "12px",
+        lg: "8px",
+        xl: "12px",
+        "2xl": "16px"
       }
     }
   },

@@ -139,7 +139,7 @@ export function DashboardPageClient() {
             <Card>
               <CardContent className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Category Distribution</h2>
+                  <h2 className="text-lg font-semibold text-[#606060]">Category Distribution</h2>
                   <p className="text-sm text-muted-foreground">See where the feedback volume is concentrated.</p>
                 </div>
                 <CategoryPieChart data={analytics.categoryCounts} />
@@ -148,7 +148,7 @@ export function DashboardPageClient() {
             <Card>
               <CardContent className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold">Daily Trend</h2>
+                  <h2 className="text-lg font-semibold text-[#606060]">Daily Trend</h2>
                   <p className="text-sm text-muted-foreground">Track how submissions change over time.</p>
                 </div>
                 <DailyTrendChart data={analytics.dailyTrend} />

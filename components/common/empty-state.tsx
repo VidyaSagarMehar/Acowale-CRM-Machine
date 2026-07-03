@@ -6,7 +6,7 @@ export function EmptyState({ title, description }: { title: string; description:
   return (
     <Card>
       <CardContent className="flex flex-col items-center justify-center gap-3 py-14 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+        <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-muted text-muted-foreground">
           <Inbox className="h-6 w-6" />
         </div>
         <div className="space-y-1">

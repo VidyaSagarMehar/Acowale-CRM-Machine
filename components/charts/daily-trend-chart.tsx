@@ -13,7 +13,7 @@ export function DailyTrendChart({ data }: { data: DailyTrendPoint[] }) {
           <XAxis dataKey="date" tickLine={false} axisLine={false} />
           <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
           <Tooltip />
-          <Bar dataKey="count" radius={[12, 12, 0, 0]} fill="hsl(var(--chart-1))" />
+          <Bar dataKey="count" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-1))" />
         </BarChart>
       </ResponsiveContainer>
     </div>
