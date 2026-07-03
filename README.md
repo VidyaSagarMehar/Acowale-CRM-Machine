@@ -2,6 +2,9 @@
 
 > A production-aware MVP for customer feedback collection and internal analytics, built on Next.js 15.
 
+**Live Demo**: [https://acowale-crm-machine.vercel.app/](https://acowale-crm-machine.vercel.app/)  
+**Admin Login**: `admin@acowale.local` / `Admin@123`
+
 ---
 
 ## Table of Contents
