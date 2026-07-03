@@ -4,6 +4,12 @@
 
 Acowale CRM Machine is a production-aware MVP foundation for collecting customer feedback and giving an internal team a protected analytics dashboard. The app focuses on readability, maintainability, and interview explainability over feature sprawl.
 
+## My Journey
+
+When approaching this challenge, I wanted to build something that felt real but didn't overcomplicate the MVP. I started by setting up Next.js with Tailwind and shadcn/ui-inspired primitives. For the backend, I chose MongoDB with Mongoose because its flexible schema is perfect for an evolving feedback collection tool. 
+
+The biggest decision was keeping the architecture straightforward. Instead of complex bounded contexts, I used feature folders (`features/feedback`, `features/dashboard`) to co-locate schemas, UI, and logic. I intentionally skipped a heavy auth provider like NextAuth in favor of a simple JWT HttpOnly cookie, which is easier to explain and review in an interview context. Finally, I prioritized aesthetics—ensuring the app matches the Acowale branding (deep blues, clean typography) to make a strong first impression.
+
 ## Features
 
 - Public landing page with product positioning and clear calls to action

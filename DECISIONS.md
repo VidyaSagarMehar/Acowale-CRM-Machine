@@ -57,3 +57,7 @@ AI tends to over-abstract or add unnecessary complexity for small scopes. The im
 - Real-time analytics aggregation on request would become slower and should move toward precomputed summaries
 - A single seeded-admin model would not scale for real teams
 - Session, observability, and operational controls would need to become more robust
+
+## 11. What to improve, change, or challenge?
+
+I would challenge the reliance on a separate public feedback form page for a CRM product. In a real-world scenario, feedback is usually collected via an in-app widget (like Intercom or a slide-out drawer) to maintain context and reduce friction. The current standalone form is simple but less integrated for the end-user.
