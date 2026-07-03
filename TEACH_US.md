@@ -1,27 +1,81 @@
-# Teach Us: Progressive Delivery with Feature Flags
+# Treat AI Prompts as Version-Controlled Engineering Assets
 
-At Acowale, you are building products that people depend on. As your user base grows and product complexity increases, shipping new features can become a bottleneck. One engineering practice that transforms culture, accelerates velocity, and drastically reduces deployment anxiety is **Progressive Delivery using Feature Flags**.
+While working on this assignment, I used AI tooling at almost every stage - scaffolding components, generating test cases, refining validation logic, and reviewing architecture decisions. What struck me was not the output quality, but something that happened repeatedly in the background: I kept rewriting the same prompts from scratch.
 
-## What is Progressive Delivery?
+Every time I wanted to generate a well-typed Next.js API route, I had to re-explain the project's conventions. Every time I generated a test, I had to re-establish the testing philosophy. The AI had no memory of what we had agreed on thirty minutes earlier. That friction was small in isolation, but compounded over a full project it became noticeable - and I kept thinking about what it would look like at team scale.
 
-Traditionally, deploying code and releasing a feature happen simultaneously. If a deployment contains a critical bug, it affects all users immediately, requiring a stressful and time-consuming rollback.
+One idea I kept coming back to is this: **prompts are engineering assets, and they deserve to be treated like one.**
 
-Progressive Delivery decouples **deploying code** from **releasing features**. By wrapping new code paths in conditional toggles (Feature flags), you can safely merge and deploy code into production without exposing it to the end user.
+---
 
-## How it works in practice
+## The Problem with Treating Prompts as Conversations
 
-1. **Dark Launching:** You can deploy an incomplete feature to production behind a flag. Developers and QA can turn the flag on for their own accounts, testing the feature against real production data while it remains entirely hidden from customers.
-2. **Canary Releases:** Once a feature is complete, you don't release it to everyone at once. You turn it on for 5% of users, monitor error rates and latency, and if everything looks stable, you gradually dial the rollout up to 100%.
-3. **Kill Switches:** If a new feature suddenly breaks under the load of 100,000 users, you don't need to revert commits, wait for a CI/CD pipeline, and redeploy. You simply flip the feature flag off. The Mean Time To Recovery (MTTR) drops from minutes to milliseconds.
+Today, most engineers interact with AI the way they interact with a search engine - ask a question, get an answer, move on. The prompt lives in a browser tab, or a Slack thread, or nowhere at all. It is not reviewed, not shared, and not improved. Tomorrow, a colleague working on the same kind of problem writes their own version from scratch.
 
-## Why this makes Acowale better
+This is not a productivity failure. It is a knowledge infrastructure failure.
 
-- **Unblocks Engineering:** Engineers no longer need to hoard long-running feature branches that result in painful merge conflicts. Everything can be merged directly into `main` continuously (Trunk-Based Development), accelerating the feedback loop.
-- **Empowers Product & Marketing:** Product managers take control of the release cycle. They can coordinate a feature launch with a marketing announcement at a specific date and time without waiting for an engineering deployment.
-- **Safer Experimentation:** You can run A/B tests effortlessly. If a new dashboard workflow decreases user engagement, the telemetry will prove it, and the old workflow can be restored instantly.
+Code goes through pull requests. Architecture decisions go into ADRs. Runbooks live in wikis. But prompts - which now directly influence code quality, consistency, and velocity - are treated as ephemeral. They disappear the moment the tab closes.
 
-## Integrating with the Acowale Stack
+As AI becomes a daily development tool rather than an occasional experiment, that gap starts to matter.
 
-In a modern Next.js environment (like the one used in this CRM Machine Test), feature flags are extremely powerful. They can be evaluated seamlessly at the Edge (via Middleware) or directly inside React Server Components before the page is rendered. This guarantees zero layout shift and no client-side performance penalties for the user.
+---
 
-By adopting Progressive Delivery, Acowale can move fast, experiment safely, and build highly dependable technology.
+## One Practice I Believe Could Become Valuable
+
+If I were building an AI-first product over the long term, I would introduce an `ai/` directory at the root of the repository - not as a novelty, but as a legitimate part of the engineering infrastructure.
+
+```
+ai/
+├── prompts/
+│   ├── component-generation.md
+│   ├── api-generation.md
+│   ├── test-generation.md
+│   └── refactoring.md
+│
+├── context/
+│   ├── architecture.md
+│   ├── coding-standards.md
+│   ├── ui-guidelines.md
+│   └── design-system.md
+│
+└── playbooks/
+    ├── onboarding.md
+    ├── code-review.md
+    └── bug-investigation.md
+```
+
+**`prompts/`** contains reusable task prompts - the kind of instructions an engineer would otherwise retype every day. A `test-generation.md` prompt might specify: use `ts-jest`, never mock the module under test, follow the `describe / it` naming convention, and prefer boundary value tests over happy-path-only coverage. An `api-generation.md` prompt might specify: always use the `apiSuccess` / `apiError` envelope, validate with Zod `.safeParse()`, never throw from a route handler.
+
+**`context/`** contains the shared background that makes prompts effective. Instead of re-explaining the project architecture on every session, an engineer pastes `architecture.md` as context upfront. The AI immediately understands the feature-folder pattern, the auth model, the response contract, and the database layer - without a five-minute orientation every time.
+
+**`playbooks/`** are workflow-level guides that combine prompts and context for recurring engineering activities. An onboarding playbook, for example, could walk a new engineer through using AI to understand the codebase - not by reading documentation alone, but by running guided AI sessions with pre-established context.
+
+---
+
+## Why This Matters Beyond Individual Productivity
+
+The compounding value is not personal efficiency. It is organisational consistency.
+
+When prompts are shared and reviewed, the AI-generated code across a team starts to converge. A component generated by a senior engineer and a component generated by someone joining their first week begin to look structurally similar - same patterns, same error handling, same naming conventions - because they used the same prompt as a starting point.
+
+Prompts can go through **pull requests**. They can be **reviewed** for quality and precision the same way code is reviewed. They carry a **version history**, so you can trace why a prompt changed and what problem it was solving at the time. They can be **continuously improved** as the codebase and conventions evolve - because a prompt that correctly reflects a six-month-old coding standard is technically debt.
+
+This also changes onboarding in a practical way. A new engineer who can read a `coding-standards.md` context file and immediately get consistent AI assistance is productive faster than one who has to discover conventions through code review feedback over several weeks.
+
+---
+
+## What This Is Not
+
+This is not a suggestion to automate engineering decisions. Prompts do not replace architecture discussions, code review, or engineering judgement. They are a layer of tooling - the same way a linting ruleset captures coding standards without replacing understanding.
+
+It is also not a suggestion to over-engineer this from day one. Even a single well-written `prompts/api-generation.md` file that three engineers agree on and commit together is more valuable than every engineer having three slightly different versions living only in their own heads.
+
+The goal is simply to stop treating shared knowledge about how to work with AI as an afterthought.
+
+---
+
+## A Closing Thought
+
+One thing I appreciated about this assignment was that it evaluated not only what AI generated, but also how engineers collaborate with AI. That prompted me to think beyond individual prompts and consider whether prompts themselves deserve to become first-class engineering assets - stored, reviewed, improved, and evolved alongside the code they help produce.
+
+The answer, I think, is yes.

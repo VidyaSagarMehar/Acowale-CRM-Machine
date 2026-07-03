@@ -4,7 +4,8 @@ const config = {
   testEnvironment: "jsdom",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/$1"
+    "^@/(.*)$": "<rootDir>/$1",
+    "^jose$": "<rootDir>/node_modules/jose/dist/node/cjs/index.js"
   }
 };
 

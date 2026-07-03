@@ -1,63 +1,183 @@
 # Engineering Decisions
 
-## 1. Why this stack?
+This document records every significant architectural and implementation decision made during the development of Acowale CRM Machine. Each entry follows a consistent structure to make the reasoning traceable and reviewable.
 
-This stack keeps the codebase small while still covering real product concerns. Next.js App Router gives pages, API routes, and middleware in one place. TypeScript, Zod, and React Hook Form keep validation explicit. Zustand handles lightweight client state without adding ceremony. Recharts is enough for the two requested visualizations.
+---
 
-## 2. Why MongoDB?
+## 1. Framework and Stack Selection
 
-MongoDB fits the feedback domain well because the initial schema is simple, document-oriented, and likely to evolve. Mongoose adds a clear model layer and validation-friendly structure while keeping the persistence story easy to explain in an interview.
+**Overview**
+The application requires server-side rendering, API routes, middleware, and a modern frontend - all within a single deployable unit.
 
-## 3. Why this architecture?
+**Decision**
+Next.js 15 (App Router) with TypeScript.
 
-The app is split by responsibility:
+**Reasoning**
+The App Router model co-locates pages, server components, API routes, and Edge Middleware in one framework without requiring a separate Express or Fastify server. TypeScript enforces type safety across the client–server boundary, catching mismatches between API response shapes and the frontend consumers that use them.
 
-- `app/` owns routes and page entry points
-- `features/` owns feature-specific UI, schemas, and API clients
-- `components/` owns reusable presentation pieces
-- `lib/` owns infrastructure and cross-cutting helpers
-- `models/` owns database documents
-- `store/` owns client-only state
+**Trade-offs**
+- Next.js introduces framework-level abstractions (RSC, Server Actions, Edge Runtime constraints) that have a learning curve.
+- A simpler React SPA with a separate Express API would be easier to deploy independently, but the monorepo structure is more appropriate for a small, rapid MVP.
 
-This keeps files small and avoids over-abstraction.
+---
 
-## 4. Trade-offs
+## 2. Database Selection
 
-- `bcryptjs` was chosen over native `bcrypt` to reduce setup friction in local environments, especially on Windows.
-- JWT cookie auth is simple and interview-friendly, but it is not as fully featured as a mature auth platform.
-- Dashboard fetching is client-driven for clarity, even though more server-driven data loading could improve initial render behavior.
+**Overview**
+The application needs to persist feedback records and admin users with a schema that may evolve as the product matures.
 
-## 5. One more week improvements
+**Decision**
+MongoDB with Mongoose.
 
-- Add debounced search and optimistic UI polish
-- Add integration tests for route handlers
-- Add stronger MongoDB indexing for search-heavy queries
-- Improve chart empty states and dashboard skeletons
-- Introduce audit logs and admin activity history
+**Reasoning**
+Feedback is a document-oriented domain. The shape of a feedback submission (name, email, category, rating, comment) maps naturally to a MongoDB document. Mongoose adds schema validation, model definitions, and a clear TypeScript interface layer on top of the driver. The flexible document model also makes it easier to extend the schema (e.g. add metadata fields) without a migration.
 
-## 6. Hardest challenge
+**Trade-offs**
+- MongoDB does not enforce referential integrity natively. For a feedback record that must always belong to a valid category, application-level validation (Zod) and Mongoose `enum` constraints are relied upon instead.
+- PostgreSQL with Prisma would be a stronger choice for relational data with complex joins. For this domain, the additional complexity is not justified.
 
-Balancing production awareness with simplicity was the main challenge. The goal was to make the architecture feel real without introducing extra systems that would be difficult to justify during a machine test.
+---
 
-## 7. AI tools used
+## 3. Authentication Strategy
 
-Codex was used to scaffold, structure, and implement the MVP foundation.
+**Overview**
+The dashboard is a protected internal tool. Only a single administrator account needs to be supported for the MVP.
 
-## 8. Where AI helped
+**Decision**
+Stateless JWT authentication with HttpOnly, SameSite=Lax cookies and a single seeded admin.
 
-AI accelerated boilerplate setup, repetitive component wiring, and maintaining consistency between schemas, types, and route handlers.
+**Reasoning**
+JWTs are stateless, which means no session store is required. Storing the token in an HttpOnly cookie (rather than `localStorage`) prevents JavaScript-based XSS attacks from reading the token. Setting `SameSite=Lax` mitigates the most common CSRF attack vectors. The `jose` library is used instead of `jsonwebtoken` because it is compatible with the Next.js Edge Runtime where middleware executes.
 
-## 9. Where AI was wrong
+**Trade-offs**
+- A stateless JWT cannot be revoked before its expiry window. In production, a token blacklist (Redis) or a short expiry with refresh tokens would be required.
+- The single seeded admin is an interview-appropriate simplification. A real product would require user management, role-based access control, and an invitation flow.
 
-AI tends to over-abstract or add unnecessary complexity for small scopes. The implementation had to stay disciplined around file size, responsibilities, and the machine-test constraints.
+---
 
-## 10. What breaks at 100k users?
+## 4. Layered Validation
 
-- Regex-based feedback search would become too expensive without indexing and query redesign
-- Real-time analytics aggregation on request would become slower and should move toward precomputed summaries
-- A single seeded-admin model would not scale for real teams
-- Session, observability, and operational controls would need to become more robust
+**Overview**
+Invalid data can enter the system from multiple entry points: the browser form, a raw API call, or a programmatic client.
 
-## 11. What to improve, change, or challenge?
+**Decision**
+Three-layer validation: React Hook Form (client) → Zod `.safeParse()` (server) → Mongoose schema constraints (database).
 
-I would challenge the reliance on a separate public feedback form page for a CRM product. In a real-world scenario, feedback is usually collected via an in-app widget (like Intercom or a slide-out drawer) to maintain context and reduce friction. The current standalone form is simple but less integrated for the end-user.
+**Reasoning**
+No single layer is fully trusted. A client-only validation is trivially bypassed. A server-only validation degrades the UX. A database-only constraint results in unstructured error messages. Using Zod as the single source of truth (the same schema is imported by both the form and the API route) ensures that the client and server constraints never drift out of sync.
+
+**Trade-offs**
+- Maintaining three layers means some constraints (e.g. `maxlength: 500`) are written in two places - the Zod schema and the Mongoose model. This is an intentional redundancy for defence-in-depth.
+
+---
+
+## 5. Feature-Folder Architecture
+
+**Overview**
+The project needs an organisational pattern that scales with additional features without creating deep import graphs or over-abstracted shared utilities.
+
+**Decision**
+Feature folders under `features/` co-locate the schema, API client, and UI components for each product concern.
+
+**Reasoning**
+A type-based folder structure (`components/`, `hooks/`, `utils/`) requires a developer to open three separate folders to understand a single feature. A feature-based structure (`features/feedback/`) keeps the schema, form, and API client in one place. Navigation from a product requirement to the implementing code is direct.
+
+**Trade-offs**
+- Some primitives (the UI component library in `components/ui/`, infrastructure in `lib/`) remain shared across features. The boundary between "feature-specific" and "shared" requires ongoing discipline to maintain.
+
+---
+
+## 6. Client State Management
+
+**Overview**
+The application has minimal client-side state beyond the authenticated user identity.
+
+**Decision**
+Zustand for the auth user store only. No global state for server data.
+
+**Reasoning**
+Zustand provides a minimal, hook-based API with no boilerplate. The auth user object is the only piece of state that needs to be shared across the component tree (dashboard header, logout action). All server-authoritative data (feedback list, analytics) is fetched directly in the components that consume it and is not cached globally, avoiding cache invalidation complexity.
+
+**Trade-offs**
+- The dashboard refetches analytics on every mount. For the current scale this is acceptable. At higher traffic, React Query or SWR would add caching, deduplication, and background refresh with minimal additional complexity.
+
+---
+
+## 7. Password Hashing Library
+
+**Overview**
+Admin passwords must be stored securely and verified at login without requiring native binary compilation.
+
+**Decision**
+`bcryptjs` (pure JavaScript) over `bcrypt` (native bindings).
+
+**Reasoning**
+`bcrypt` requires Python and a C++ build toolchain at install time, which creates friction in local development environments, particularly on Windows. `bcryptjs` is a drop-in API-compatible alternative implemented entirely in JavaScript, removing the native dependency while maintaining the same security guarantees.
+
+**Trade-offs**
+- `bcryptjs` is measurably slower than `bcrypt`. At the scale of a CRM admin login (infrequent, non-concurrent), this performance difference is irrelevant.
+
+---
+
+## 8. API Response Shape
+
+**Overview**
+All API routes need to return responses in a consistent, predictable shape.
+
+**Decision**
+A shared `apiSuccess` / `apiError` helper in `lib/api-response.ts` enforces a standard envelope: `{ success, message, data }` or `{ success, message, errors }`.
+
+**Reasoning**
+Consistent response envelopes allow the frontend to handle API responses with a single pattern rather than writing bespoke error handling for each endpoint. The shape is also easy to document and test.
+
+**Trade-offs**
+- The envelope adds a small amount of JSON overhead per response. For an API at this scale, this is negligible.
+
+---
+
+## 9. CI Pipeline
+
+**Overview**
+The repository needs automated quality checks to prevent regressions on every push.
+
+**Decision**
+GitHub Actions workflow (`.github/workflows/ci.yml`) that runs `npm ci`, `npm run lint`, `npm run test`, and `npm run build` on every push to `main` and on every pull request.
+
+**Reasoning**
+A CI pipeline makes quality gates visible and automatic. It prevents broken or untested code from being merged silently. The pipeline is intentionally simple - no Docker, no deployment step - to keep feedback fast.
+
+**Trade-offs**
+- The build step in CI requires `MONGODB_URI` and `JWT_SECRET` environment variables. Dummy values are provided in the workflow file. This is acceptable for build-time validation but not for integration tests that require a real database.
+
+---
+
+## 10. What Breaks at 100,000 Users?
+
+**Overview**
+A machine test architecture is optimised for clarity and simplicity. At production scale, several bottlenecks emerge.
+
+**Decision**
+Documented as known limitations, not deferred bugs.
+
+| Component | Failure Mode | Resolution Path |
+|---|---|---|
+| Regex feedback search | Full collection scan with no index | MongoDB Atlas Search or indexed text fields |
+| Per-request analytics aggregation | Increasing latency as collection grows | Precomputed summary documents refreshed on a schedule |
+| Single admin account | No multi-tenancy or delegation | RBAC with a `roles` collection |
+| No rate limiting | Public POST `/api/feedback` is open to spam | Per-IP rate limiting at the Edge (Middleware) |
+| No observability | Silent failures and no performance baseline | Structured logging (Pino), error tracking (Sentry) |
+
+---
+
+## 11. What I Would Improve, Change, or Challenge
+
+**Overview**
+One aspect of the current design that would benefit from architectural reconsideration.
+
+**Decision**
+The public feedback form as a standalone page.
+
+**Reasoning**
+For a CRM product, feedback is usually contextual - it is collected in-product, immediately after an interaction. A standalone form page creates unnecessary friction and reduces submission rates. An embedded feedback widget (rendered in a slide-out drawer or a modal overlay) would match where users are when they have feedback to share, rather than requiring them to navigate away to a separate URL.
+
+This would also allow the feedback form to capture additional context automatically (current page URL, user session ID) without asking the user to supply it manually.
